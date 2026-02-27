@@ -1,7 +1,15 @@
 /var/log/monitorix /var/log/monitorix-httpd {
-	nocompress
+	rotate 52
+	weekly
 	missingok
+	ignoreduplicates
+	notifempty
+	nocreate
+	copytruncate
+	compress
+	delaycompress
 	postrotate
 		/usr/bin/systemctl kill --signal=HUP --kill-who=main monitorix.service 2>/dev/null || true
 	endscript
 }
+
