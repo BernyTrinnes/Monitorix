@@ -33,6 +33,7 @@ install:
 	$(Q)echo "  make install-systemd-all (systemd based systems)"
 	$(Q)echo "  make install-upstart-all (upstart based systems)"
 	$(Q)echo "  make install-debian-all (legacy debian sysv based systems)"
+	$(Q)echo "  make install-debian-systemd-ll (debian systemd based systems)"
 	$(Q)echo "  make install-redhat-all (legacy redhat sysv based systems)"
 	$(Q)echo
 	$(Q)echo "Default targets may be overridden on the shell so"
@@ -169,6 +170,7 @@ install-systemd:
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)"
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) docs/$(PN).service "$(DESTDIR)$(INITDIR_SYSTEMD)/$(PN).service"
+	$(INSTALL_DATA) docs/$(PN).logrotate.systemd "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN)"
 
 install-upstart:
 	$(Q)echo -e '\033[1;32mInstalling upstart service...\033[0m'
@@ -182,6 +184,15 @@ install-debian:
 	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d"
 	$(INSTALL_DATA) docs/debian.conf "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d/00-debian.conf"
 
+install-debian-systemd:
+	$(Q)echo -e '\033[1;32mInstalling debian systemd service...\033[0m'
+	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR)"
+	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
+	$(INSTALL_DATA) docs/$(PN).service "$(DESTDIR)$(INITDIR_SYSTEMD)/$(PN).service"
+	$(INSTALL_DATA) docs/$(PN).logrotate.systemd "$(DESTDIR)$(CONFDIR)/logrotate.d/$(PN)"
+	python3 docs/adapt_debian_configuration.py "$(DESTDIR)$(CONFDIR)/$(PN)"
+	$(INSTALL_DATA) docs/debian.conf "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d/99-debian.conf"
+
 install-redhat:
 	$(Q)echo -e '\033[1;32mInstalling redhat sysv service...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_RHEL)"
@@ -192,6 +203,8 @@ install-systemd-all: install-bin install-man install-docs install-systemd
 install-upstart-all: install-bin install-man install-docs install-upstart
 
 install-debian-all: install-bin install-man install-docs install-debian
+
+install-debian-systemd-all: install-bin install-man install-docs install-debian-systemd
 
 install-redhat-all: install-bin install-man install-docs install-redhat
 
@@ -231,6 +244,10 @@ uninstall-debian:
 	$(RM) "$(DESTDIR)$(INITDIR_OTHER)/$(PN)"
 	$(RM) "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d/00-debian.conf"
 
+uninstall-debian-systemd:
+	$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/$(PN).service"
+	$(RM) "$(DESTDIR)$(CONFDIR)/$(PN)/conf.d/00-debian.conf"
+
 uninstall-redhat:
 	$(RM) "$(DESTDIR)$(INITDIR_RHEL)/$(PN)"
 
@@ -240,6 +257,8 @@ uninstall-upstart-all: uninstall-bin uninstall-man uninstall-docs uninstall-upst
 
 uninstall-debian-all: uninstall-bin uninstall-man uninstall-docs uninstall-debian
 
+uninstall-debian-systemd-all: uninstall-bin uninstall-man uninstall-docs uninstall-debian-systemd
+
 uninstall-redhat-all: uninstall-bin uninstall-man uninstall-docs uninstall-redhat
 
 uninstall:
@@ -247,8 +266,9 @@ uninstall:
 	$(Q)echo "  make uninstall-systemd-all (systemd based systems)"
 	$(Q)echo "  make uninstall-upstart-all (upstart based systems)"
 	$(Q)echo "  make uninstall-debian-all (debian sysv based systems)"
+	$(Q)echo "  make uninstall-debian-systemd-all (debian systemd based systems)"
 	$(Q)echo "  make uninstall-redhat-all (redhat sysv based systems)"
 	$(Q)echo
 	$(Q)echo "or check out the Makefile for specific rules"
 
-.PHONY: help install-bin install-docs install-man install-systemd install-upstart install-debian install-redhat install-systemd-all install-upstart-all install-debian-all install-redhat-all install uninstall-bin uninstall-docs uninstall-man uninstall-systemd uninstall-upstart uninstall-debian uinstall-redhat uninstall-systemd-all uninstall-upstart-all uninstall-debian-all uninstall-redhat-all uninstall
+.PHONY: help install-bin install-docs install-man install-systemd install-upstart install-debian install-debian-systemd install-redhat install-systemd-all install-upstart-all install-debian-all install-debian-systemd-all install-redhat-all install uninstall-bin uninstall-docs uninstall-man uninstall-systemd uninstall-upstart uninstall-debian uninstall-debian-systemd uinstall-redhat uninstall-systemd-all uninstall-upstart-all uninstall-debian-all uninstall-debian-systemd-all uninstall-redhat-all uninstall
